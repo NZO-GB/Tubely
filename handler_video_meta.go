@@ -14,15 +14,9 @@ func (cfg *apiConfig) handlerVideoMetaCreate(w http.ResponseWriter, r *http.Requ
 		database.CreateVideoParams
 	}
 
-	token, err := auth.GetBearerToken(r.Header)
+	userID, err := validateUser(r, cfg.jwtSecret)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Couldn't find JWT", err)
-		return
-	}
-	userID, err := auth.ValidateJWT(token, cfg.jwtSecret)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Couldn't validate JWT", err)
-		return
+		respondWithError(w, http.StatusUnauthorized, "Authorization error", err)
 	}
 
 	decoder := json.NewDecoder(r.Body)
