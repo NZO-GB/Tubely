@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"crypto/rand"
+	"encoding/base64"
 
 	"github.com/google/uuid"
 )
@@ -56,7 +58,9 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	}
 
 	fileExtension := strings.Split(mediaType, "/")[1]
-	videoWithExtension := videoIDString + "." + fileExtension
+	randBytes := make([]byte, 32)
+	rand.Read(randBytes)
+	videoWithExtension :=  base64.RawURLEncoding.EncodeToString(randBytes) + "." + fileExtension
 
 	thumbnailURL := fmt.Sprintf("http://localhost:%s/assets/%s", cfg.port, videoWithExtension)
 
@@ -80,7 +84,7 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	if video.UserID != userID {
-		respondWithError(w, http.StatusUnauthorized, "You must be the author of the video", err)
+		respondWithError(w, http.StatusForbidden, "You must be the author of the video", nil)
 		return
 	}
 	
